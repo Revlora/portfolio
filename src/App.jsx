@@ -94,7 +94,6 @@ function App() {
 
       <section className="hero">
         <div className="hero-copy">
-          <p className="eyebrow">Portfolio / React / Vercel Ready</p>
           <h1>
             Evan Andrei
             <span>Reblora</span>
