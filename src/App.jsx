@@ -85,6 +85,36 @@ const projects = [
 function App() {
   const [photoLoaded, setPhotoLoaded] = useState(false)
   const [photoError, setPhotoError] = useState(false)
+  const [formStatus, setFormStatus] = useState({ type: '', message: '' })
+
+  async function handleContactSubmit(event) {
+    event.preventDefault()
+    const form = event.currentTarget
+    const formData = new FormData(form)
+
+    setFormStatus({ type: 'sending', message: 'Sending your message...' })
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.fromEntries(formData)),
+      })
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Unable to send your message.')
+      }
+
+      form.reset()
+      setFormStatus({ type: 'success', message: 'Thank you. Your message has been sent.' })
+    } catch (error) {
+      setFormStatus({
+        type: 'error',
+        message: error.message || 'Unable to send your message. Please try again later.',
+      })
+    }
+  }
 
   return (
     <main className="page-shell">
@@ -239,15 +269,55 @@ function App() {
       <section className="section contact-section" id="contact">
         <div className="contact-card glass-card">
           <p className="eyebrow">Contact</p>
-          <h2>Ready for opportunities, collaborations, and future growth.</h2>
+          <h2>Let's discuss your next project.</h2>
           <p>
-            This layout is intentionally easy to refine. Once you add your photo, links, and real
-            project details, it will be ready for deployment.
+            Have an opportunity, collaboration, or project in mind? Send a message and I will get
+            back to you as soon as I can.
           </p>
-          <div className="contact-line">
-            <span>Name</span>
-            <strong>Evan Andrei Reblora</strong>
-          </div>
+
+          <form className="contact-form" onSubmit={handleContactSubmit}>
+            <div className="form-grid">
+              <label>
+                First name
+                <input name="firstName" type="text" autoComplete="given-name" required maxLength="60" />
+              </label>
+              <label>
+                Last name
+                <input name="lastName" type="text" autoComplete="family-name" required maxLength="60" />
+              </label>
+            </div>
+
+            <label>
+              Email address
+              <input name="email" type="email" autoComplete="email" required maxLength="120" />
+            </label>
+
+            <label>
+              Topic you want to discuss
+              <input name="topic" type="text" placeholder="Project inquiry, collaboration, or opportunity" required maxLength="120" />
+            </label>
+
+            <label>
+              Your message
+              <textarea name="message" rows="5" required maxLength="3000" />
+            </label>
+
+            <label className="honeypot" aria-hidden="true">
+              Website
+              <input name="website" type="text" tabIndex="-1" autoComplete="off" />
+            </label>
+
+            <div className="form-footer">
+              <button className="primary-btn" type="submit" disabled={formStatus.type === 'sending'}>
+                {formStatus.type === 'sending' ? 'Sending...' : 'Send Message'}
+              </button>
+              {formStatus.message && (
+                <p className={`form-status ${formStatus.type}`} role="status">
+                  {formStatus.message}
+                </p>
+              )}
+            </div>
+          </form>
         </div>
       </section>
     </main>
